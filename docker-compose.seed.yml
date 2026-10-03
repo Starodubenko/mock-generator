@@ -1,0 +1,6 @@
+services:
+  test-indexer:
+    environment:
+      SEED_REFERENCE_PATH: /data/reference-corpus.json
+    volumes:
+      - ./json-examples/reference-corpus.json:/data/reference-corpus.json:ro

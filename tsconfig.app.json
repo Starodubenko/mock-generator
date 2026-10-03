@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "./dist/tsconfig.app.tsbuildinfo"
+  },
+  "include": ["src/**/*"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/views/entry-client.tsx",
+    "src/views/entry-server.tsx",
+    "src/test/**",
+    "src/infra/neighbor-data/**/*-double.ts"
+  ]
+}

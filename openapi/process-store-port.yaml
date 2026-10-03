@@ -1,0 +1,63 @@
+openapi: 3.0.3
+info:
+  title: Neighbor process-store port
+  version: 1.0.0
+servers:
+  - url: /internal/v1
+paths:
+  /process-store:
+    post:
+      operationId: processStoreRpc
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [op]
+              properties:
+                op:
+                  type: string
+                  enum:
+                    - getJob
+                    - saveJob
+                    - listJobs
+                    - hasTrainingInFlight
+                    - setTrainingInFlight
+                    - clearTrainingInFlight
+                    - getIdempotency
+                    - saveIdempotency
+                    - getProfile
+                    - saveProfile
+                    - getEnumExtras
+                    - addEnumExtra
+                    - listProfiles
+                    - deleteProfile
+                    - getVersionLabel
+                    - setVersionLabel
+                    - getActiveVersionId
+                    - setActiveVersionId
+                    - appendActivation
+                    - wasActivated
+                    - getQuarantine
+                    - appendQuarantine
+                    - markSyntheticIndex
+                    - markSyntheticSource
+                    - appendPublishedIds
+                    - getPublishedIds
+                    - saveDraftDocuments
+                    - getDraftDocuments
+                    - listDocumentTypes
+                    - hasDocumentType
+                    - addDocumentType
+                    - deleteDocumentType
+                args:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '200':
+          description: RPC result. Missing get* rows are null.
+        '400':
+          description: unknown op or invalid args
+        '401':
+          description: missing service name or token

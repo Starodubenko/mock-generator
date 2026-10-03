@@ -1,0 +1,174 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Job {
+  jobId                      String  @id @map("job_id")
+  kind                       String
+  documentType               String  @map("document_type")
+  contour                    String
+  state                      String
+  profileVersionId           String? @map("profile_version_id")
+  seed                       String?
+  requestedCount             Int?    @map("requested_count")
+  publishedCount             Int     @map("published_count")
+  quarantineCount            Int     @map("quarantine_count")
+  reason                     String?
+  createdAt                  String  @map("created_at")
+  finishedAt                 String? @map("finished_at")
+  checkpointDocumentNumber   Int     @map("checkpoint_document_number")
+  targetIndex                String? @map("target_index")
+  generatedAt                String? @map("generated_at")
+  fieldConstraints           String? @map("field_constraints")
+  arrayPaths                 String? @map("array_paths")
+
+  @@map("jobs")
+}
+
+model ProfileVersion {
+  documentType             String  @map("document_type")
+  contour                  String
+  versionId                String  @map("version_id")
+  snapshotId               String  @map("snapshot_id")
+  createdAt                String  @map("created_at")
+  mappingIndex             String  @map("mapping_index")
+  paths                    String
+  aliases                  String
+  corpusValueFingerprints  String  @map("corpus_value_fingerprints")
+  sampleDocumentCount      Int     @map("sample_document_count")
+  activatable              Boolean
+  links                    String  @default("{}")
+
+  @@id([documentType, contour, versionId])
+  @@map("profile_versions")
+}
+
+model ActiveVersion {
+  documentType String @map("document_type")
+  contour      String
+  versionId    String @map("version_id")
+
+  @@id([documentType, contour])
+  @@map("active_versions")
+}
+
+model Idempotency {
+  key      String @id
+  bodyHash String @map("body_hash")
+  jobId    String @map("job_id")
+
+  @@map("idempotency")
+}
+
+model TrainingInFlight {
+  key   String @id
+  jobId String @map("job_id")
+
+  @@map("training_in_flight")
+}
+
+model EnumExtra {
+  documentType String @map("document_type")
+  contour      String
+  versionId    String @map("version_id")
+  path         String
+  value        String
+
+  @@id([documentType, contour, versionId, path, value])
+  @@map("enum_extras")
+}
+
+model VersionLabel {
+  documentType String @map("document_type")
+  contour      String
+  versionId    String @map("version_id")
+  label        String
+
+  @@id([documentType, contour, versionId])
+  @@map("version_labels")
+}
+
+model ActivationJournal {
+  id                BigInt  @id @default(autoincrement())
+  documentType      String  @map("document_type")
+  contour           String
+  versionId         String  @map("version_id")
+  previousVersionId String? @map("previous_version_id")
+  activatedAt       String  @map("activated_at")
+
+  @@map("activation_journal")
+}
+
+model Quarantine {
+  id         BigInt @id @default(autoincrement())
+  jobId      String @map("job_id")
+  documentId String @map("document_id")
+  reason     String
+
+  @@map("quarantine")
+}
+
+model SyntheticIndex {
+  name String @id
+
+  @@map("synthetic_indices")
+}
+
+model SyntheticSource {
+  name String @id
+
+  @@map("synthetic_sources")
+}
+
+model PublishedId {
+  id         BigInt @id @default(autoincrement())
+  jobId      String @map("job_id")
+  documentId String @map("document_id")
+
+  @@map("published_ids")
+}
+
+model DraftDocument {
+  jobId     String @id @map("job_id")
+  documents String
+
+  @@map("draft_documents")
+}
+
+model DocumentType {
+  documentType String @id @map("document_type")
+
+  @@map("document_types")
+}
+
+model Meta {
+  key   String @id
+  value String
+
+  @@map("meta")
+}
+
+model MockGroup {
+  name String @id
+
+  @@map("mock_groups")
+}
+
+model MockResource {
+  method    String
+  path      String
+  groupName String  @map("group_name")
+  summary   String  @default("")
+  jobId     String  @default("") @map("job_id")
+  body      String?
+  updatedAt String  @map("updated_at")
+
+  @@id([method, path])
+  @@map("mock_resources")
+}

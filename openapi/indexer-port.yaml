@@ -1,0 +1,283 @@
+openapi: 3.0.3
+info:
+  title: Neighbor indexer port
+  version: 1.0.0
+servers:
+  - url: /internal/v1
+paths:
+  /health:
+    get:
+      operationId: ping
+      responses:
+        '200':
+          description: Neighbor and OpenSearch are up
+        '503':
+          description: OpenSearch is down
+  /corpus/snapshots:
+    post:
+      operationId: openSnapshot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contour, sourceIndex, sampleSize]
+              properties:
+                contour: { type: string }
+                sourceIndex: { type: string }
+                sampleSize: { type: integer }
+      responses:
+        '201':
+          description: Snapshot opened
+        '403':
+          description: source_is_synthetic or prod contour
+  /corpus/snapshots/{snapshotId}/pages:
+    post:
+      operationId: readSnapshot
+      parameters:
+        - in: path
+          name: snapshotId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contour, limit]
+              properties:
+                contour: { type: string }
+                cursor: { type: string, nullable: true }
+                limit: { type: integer }
+      responses:
+        '200':
+          description: Page of snapshot documents
+  /corpus/snapshots/{snapshotId}:
+    delete:
+      operationId: closeSnapshot
+      parameters:
+        - in: path
+          name: snapshotId
+          required: true
+          schema: { type: string }
+        - in: query
+          name: contour
+          required: true
+          schema: { type: string }
+      responses:
+        '204':
+          description: Closed or already gone
+  /indexes/{index}/mapping:
+    get:
+      operationId: getMapping
+      parameters:
+        - in: path
+          name: index
+          required: true
+          schema: { type: string }
+        - in: query
+          name: contour
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Index mapping, dynamic strict or false
+  /indexes/{index}/documents:batch:
+    put:
+      operationId: upsertBatch
+      parameters:
+        - in: path
+          name: index
+          required: true
+          schema: { type: string }
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string }
+        - in: header
+          name: X-Service-Name
+          schema: { type: string }
+        - in: header
+          name: Authorization
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contour, jobId, batchNo, mode, documents]
+              properties:
+                contour: { type: string }
+                jobId: { type: string }
+                batchNo: { type: integer }
+                mode: { type: string, enum: [canary, full] }
+                documents:
+                  type: array
+                  items:
+                    type: object
+                    required: [id, body]
+                    properties:
+                      id: { type: string }
+                      body: { type: object }
+      responses:
+        '200':
+          description: UpsertBatchResult
+        '403':
+          description: Non-synthetic index or prod contour
+        '429':
+          description: Retry same Idempotency-Key
+  /indexes/{index}:refresh:
+    post:
+      operationId: refresh
+      parameters:
+        - in: path
+          name: index
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contour]
+              properties:
+                contour: { type: string }
+      responses:
+        '200':
+          description: refreshed true
+  /indexes/{index}/search:
+    post:
+      operationId: search
+      parameters:
+        - in: path
+          name: index
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contour]
+              properties:
+                contour: { type: string }
+                body: { type: object }
+      responses:
+        '200':
+          description: total and ids only
+  /indexes/{index}/documents:
+    delete:
+      operationId: purgeJobDocuments
+      parameters:
+        - in: path
+          name: index
+          required: true
+          schema: { type: string }
+        - in: query
+          name: contour
+          required: true
+          schema: { type: string }
+        - in: query
+          name: jobId
+          required: true
+          schema: { type: string }
+      responses:
+        '204':
+          description: Job documents removed
+        '403':
+          description: Reference or non-synthetic index
+  /mock-resources:
+    get:
+      operationId: listMockResources
+      responses:
+        '200':
+          description: Catalog without response bodies
+    put:
+      operationId: putMockCatalog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [method, path, group]
+              properties:
+                method: { type: string }
+                path: { type: string }
+                group: { type: string }
+                summary: { type: string }
+      responses:
+        '200':
+          description: Upserted catalog row
+        '400':
+          description: Invalid path
+    delete:
+      operationId: deleteMockEndpoint
+      parameters:
+        - in: query
+          name: method
+          required: true
+          schema: { type: string }
+        - in: query
+          name: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Removed
+  /mock-resources/groups:
+    get:
+      operationId: listMockGroups
+      responses:
+        '200':
+          description: Group names
+    put:
+      operationId: putMockGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+      responses:
+        '200':
+          description: Group saved
+    delete:
+      operationId: deleteMockGroup
+      parameters:
+        - in: query
+          name: name
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Group removed
+  /mock-resources/body:
+    put:
+      operationId: putMockResourceBody
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [method, path, jobId, body]
+              properties:
+                method: { type: string }
+                path: { type: string }
+                jobId: { type: string }
+                body:
+                  description: Object or array of generated draft bodies
+      responses:
+        '200':
+          description: Response bound
+        '400':
+          description: Invalid path

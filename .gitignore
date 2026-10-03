@@ -1,0 +1,19 @@
+dist
+node_modules
+coverage
+.cursor
+.DS_Store
+*.log
+.env
+.env.local
+*.sqlite
+*.tsbuildinfo
+apps/test-indexer/dist
+apps/test-indexer/node_modules
+
+# Example / corpus documents
+json-examples/
+
+# Local notes — not published
+*.md
+!/README.md

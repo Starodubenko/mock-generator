@@ -1,0 +1,15 @@
+export type FailReason =
+  | 'empty_corpus'
+  | 'mixed_types'
+  | 'type_conflict'
+  | 'below_min_sample'
+  | 'prod_target'
+  | 'source_is_synthetic'
+  | 'canary_failed'
+  | 'poison_ratio'
+  | 'invariant_exhausted'
+  | 'mapping_incompatible'
+  | 'missing_required'
+  | 'link_outside_job'
+  | 'transport_rejected'
+  | 'idempotency_conflict';

@@ -1,0 +1,74 @@
+name: mock-generator
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: indexer
+      POSTGRES_PASSWORD: indexer
+      POSTGRES_DB: indexer
+    ports:
+      - '5434:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U indexer -d indexer']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  opensearch:
+    image: opensearchproject/opensearch:2.19.1
+    environment:
+      discovery.type: single-node
+      DISABLE_SECURITY_PLUGIN: 'true'
+      OPENSEARCH_JAVA_OPTS: -Xms512m -Xmx512m
+    ports:
+      - '9200:9200'
+      - '9600:9600'
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -s http://localhost:9200 >/dev/null || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  test-indexer:
+    build:
+      context: ./apps/test-indexer
+    ports:
+      - '3100:3100'
+    environment:
+      PORT: 3100
+      OPENSEARCH_NODE: http://opensearch:9200
+      EXPECTED_SERVICE_NAME: synthetic-data-generator
+      PLATFORM_SERVICE_TOKEN: ${PLATFORM_SERVICE_TOKEN:-}
+      PROD_CONTOURS: prod
+      SYNTHETIC_INDEX_SUFFIX: -synthetic
+      SEED_REFERENCE_INDEX: documents-reference
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: indexer
+      POSTGRES_PASSWORD: indexer
+      POSTGRES_DB: indexer
+      DATABASE_URL: postgresql://indexer:indexer@postgres:5432/indexer
+      SEED_DOCUMENT_TYPES: document
+    depends_on:
+      opensearch:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3100/internal/v1/health',{headers:{'x-service-name':'synthetic-data-generator'}}).then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+
+volumes:
+  postgres-data:

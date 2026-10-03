@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react-jsx",
+    "target": "ES2023",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true,
+    "strictBindCallApply": true,
+    "noFallthroughCasesInSwitch": true,
+    "types": ["node", "jest"],
+    "baseUrl": ".",
+    "paths": {
+      "@app/*": ["src/app/*"],
+      "@api/*": ["src/api/*"],
+      "@use-cases/*": ["src/use-cases/*"],
+      "@entities/*": ["src/entities/*"],
+      "@repositories/*": ["src/repositories/*"],
+      "@infra/*": ["src/infra/*"],
+      "@views/*": ["src/views/*"],
+      "@frontend/*": ["src/frontend/*"],
+      "@test/*": ["src/test/*"],
+      "@/*": ["src/*"],
+      "@nestjs-ssr/react/client": ["node_modules/@nestjs-ssr/react/dist/client"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}
